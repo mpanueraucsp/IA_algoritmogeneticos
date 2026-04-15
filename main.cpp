@@ -164,9 +164,6 @@ class Grafica{
         verticesMejor = construirVerticesGraficaAutomatico(mejoresfitness);
         verticesProm  = construirVerticesGraficaAutomatico(promedios);
 
-        
-
-        // 2. Inicializar GLFW
         glfwInit();
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -182,23 +179,19 @@ class Grafica{
         glfwMakeContextCurrent(window);
         glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-        // 3. Inicializar GLAD
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
             cerr << "No se pudo inicializar GLAD" << endl;
             return -1;
         }
 
-        // 4. Shaders
         GLuint shaderProgram = crearShaderProgram();
         GLint colorLoc = glGetUniformLocation(shaderProgram, "uColor");
 
-        // 5. Crear VAO/VBO
         GLuint VBOEjes, VBOMejor, VBOProm;
         GLuint VAOEjes  = crearVAO(verticesEjes, VBOEjes);
         GLuint VAOMejor = crearVAO(verticesMejor, VBOMejor);
         GLuint VAOProm  = crearVAO(verticesProm, VBOProm);
 
-        // 6. Render loop
         while (!glfwWindowShouldClose(window)) {
             processInput(window);
 
@@ -215,7 +208,7 @@ class Grafica{
             // Mejor fitness - rojo
             if (!verticesMejor.empty()) {
                 glBindVertexArray(VAOMejor);
-                glUniform3f(colorLoc, 1.0f, 0.0f, 0.0f);
+                glUniform3f(colorLoc, 1.0f, 0.0f, 0.0f); //rojo
                 glDrawArrays(GL_LINE_STRIP, 0, (GLsizei)(verticesMejor.size() / 3));
             }
 
@@ -348,9 +341,10 @@ class AGenetico{
     }
     Individuo torneo(int k = 3) {
         Individuo mejor = poblacion[randomInt(0, tamPoblacion - 1)];
-        for (int i = 1; i < k; i++) {
+        for (int i = 0; i < k; i++) {
             Individuo candidato = poblacion[randomInt(0, tamPoblacion - 1)];
-            if (candidato.fitness > mejor.fitness) {
+            //if (candidato.fitness > mejor.fitness) {
+            if (candidato.f < mejor.f) {
                 mejor = candidato;
             }
         }
@@ -373,13 +367,13 @@ class AGenetico{
         }
         return mejor;
     }
-    void mutar(Individuo &ind, double probMutacion = 0.1) {
+    void mutar(Individuo &ind, double probMutacion = 0.5) {
         double r = (double)rand() / RAND_MAX;
-        if (r < probMutacion) {
+        if (probMutacion>r) {
             ind.x += randomRange(-1, 1);
             ind.y += randomRange(-1, 1);
 
-            // asegurar límites
+            // no pase del limite
             ind.x = max(limiteX[0], min(ind.x, limiteX[1]));
             ind.y = max(limiteY[0], min(ind.y, limiteY[1]));
         }
@@ -427,7 +421,7 @@ class AGenetico{
             promediosF.push_back(promedioF);
 
             //cout<<"#"<<gen<<"|fitness:"<<mejor.fitness<<"|promedioFitness:"<<promedioFitness<<"("<<mejor.x<<", "<<mejor.y<<")="<<mejor.f<<endl;
-            cout<<"#"<<gen<<"|f:"<<mejor.f<<"|promedio:"<<promedioF<<"("<<mejor.x<<", "<<mejor.y<<")="<<mejor.f<<endl;
+            //cout<<"#"<<gen<<"|f:"<<mejor.f<<"|promedio:"<<promedioF<<"("<<mejor.x<<", "<<mejor.y<<")"<<endl;
             
             if (mejor.fitness > mejorFitnessGlobal) {
                 mejorFitnessGlobal = mejor.fitness;
