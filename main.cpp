@@ -103,6 +103,36 @@ class Grafica{
 
         return vertices;
     }
+    vector<float> construirVerticesGraficaAutomatico(const vector<double>& datos) {
+        vector<float> vertices;
+        int n = (int)datos.size();
+        if (n == 0) return vertices;
+
+        double minDato = datos[0];
+        double maxDato = datos[0];
+
+        for (double v : datos) {
+            if (v < minDato) minDato = v;
+            if (v > maxDato) maxDato = v;
+        }
+
+        // evitar división por cero
+        if (fabs(maxDato - minDato) < 1e-12) {
+            maxDato = minDato + 1.0;
+        }
+
+        for (int i = 0; i < n; i++) {
+            float x = -0.9f + 1.8f * ((float)i / (float)(n - 1));
+
+            float y = -0.9f + 1.8f * (float)((datos[i] - minDato) / (maxDato - minDato));
+
+            vertices.push_back(x);
+            vertices.push_back(y);
+            vertices.push_back(0.0f);
+        }
+
+        return vertices;
+    }
 
     GLuint crearVAO(const vector<float>& vertices, GLuint &VBO) {
         GLuint VAO;
@@ -126,9 +156,15 @@ class Grafica{
             -0.9f, -0.9f, 0.0f,   0.9f, -0.9f, 0.0f,   // eje X
             -0.9f, -0.9f, 0.0f,  -0.9f,  0.9f, 0.0f    // eje Y
         };
+        vector<float> verticesMejor, verticesProm;
 
-        vector<float> verticesMejor = construirVerticesGrafica(mejoresfitness);
-        vector<float> verticesProm  = construirVerticesGrafica(promedios);
+        //verticesMejor = construirVerticesGrafica(mejoresfitness);
+        //verticesProm  = construirVerticesGrafica(promedios);
+
+        verticesMejor = construirVerticesGraficaAutomatico(mejoresfitness);
+        verticesProm  = construirVerticesGraficaAutomatico(promedios);
+
+        
 
         // 2. Inicializar GLFW
         glfwInit();
@@ -136,7 +172,7 @@ class Grafica{
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        GLFWwindow* window = glfwCreateWindow(1000, 700, "Grafica AG - Fitness", nullptr, nullptr);
+        GLFWwindow* window = glfwCreateWindow(1000, 700, "Algoritmo Genetico Generaciones vs Fitness", nullptr, nullptr);
         if (window == nullptr) {
             cerr << "No se pudo crear la ventana GLFW" << endl;
             glfwTerminate();
@@ -418,6 +454,9 @@ class AGenetico{
 };
 int main(){
     AGenetico ag;
+    ag.tamPoblacion = 100;
+    ag.maxGeneraciones = 1000;
+    ag.sinMejoraLimite = 10;
     ag.setLimiteX(0,31);
     ag.setLimiteY(0,63);
     ag.ejecutar();
